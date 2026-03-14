@@ -28,7 +28,7 @@ body {
   font-family: 'Inter', sans-serif;
   background-color: #111827; 
   color: var(--dj-black);
-  overflow-x: hidden;
+  overflow: hidden; /* Prevent double scrollbars on desktop */
 }
 
 /* --- 4. MOBILE-FIRST SHELL --- */
@@ -48,22 +48,26 @@ body {
   max-height: 932px;
   position: relative;
   box-shadow: var(--dj-shadow);
-  
-  /* Desktop "Device" styling */
   border: 8px solid #1f2937;
   border-radius: 48px;
-  
-  /* Layout behavior */
   display: flex;
   flex-direction: column;
   overflow: hidden; 
 }
 
-/* On actual mobile devices, take up the full screen */
+/* Vertical Centering Fix: Use Flexbox on 'main' */
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* This centers the login form vertically */
+  overflow-y: auto;
+  padding: 24px;
+}
+
+/* On actual mobile devices */
 @media (max-width: 640px) {
-  #root {
-    align-items: flex-start;
-  }
+  #root { align-items: flex-start; }
   .mobile-layout {
     max-width: 100%;
     height: 100vh;
@@ -73,17 +77,7 @@ body {
   }
 }
 
-main {
-  flex: 1;
-  display: flex;           /* Added to enable centering */
-  flex-direction: column;  /* Stack form elements vertically */
-  justify-content: center; /* This centers the login box vertically in the phone */
-  overflow-y: auto;
-  padding-top: 20px;       /* Reduced from 80 to keep centering balanced */
-  padding-bottom: 40px;
-}
-
-/* --- 5. BRAND HEADER --- */
+/* --- 5. BRAND HEADER (J Fix) --- */
 .dj-brand-header {
   position: absolute; 
   top: 0;
@@ -103,25 +97,25 @@ main {
   align-items: center;
   gap: 12px;
   text-decoration: none;
-  min-width: 200px; /* Ensure enough room for the text */
+  overflow: visible; /* Ensure nothing inside is clipped */
 }
 
 .dj-brand-name {
   font-size: 1.25rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em; /* Reduced slightly to help width */
   color: var(--dj-black);
-  white-space: nowrap; /* Prevents "JOSH" from wrapping/cutting off */
+  white-space: nowrap;     /* Force text to stay on one line */
+  display: inline-block;
+  min-width: fit-content;  /* Allow container to expand to full text */
 }
 
-.dj-gold-text {
-  color: var(--dj-gold);
-}
+.dj-gold-text { color: var(--dj-gold); }
 
 /* --- 6. ATOMIC UI ELEMENTS --- */
 .dj-form-group {
   margin-bottom: 1.5rem;
-  padding: 0 20px;
+  width: 100%;
 }
 
 .dj-label {
@@ -133,17 +127,17 @@ main {
   text-transform: uppercase;
 }
 
-.dj-input, .dj-select, .dj-textarea {
+.dj-input {
   width: 100%;
-  padding: 12px 16px;
+  padding: 14px 16px;
   border: 1.5px solid var(--dj-gray-border);
-  border-radius: 12px;
+  border-radius: 14px;
   font-size: 1rem;
   transition: all 0.2s ease;
   background: var(--dj-white);
 }
 
-.dj-input:focus, .dj-select:focus {
+.dj-input:focus {
   outline: none;
   border-color: var(--dj-gold);
   box-shadow: 0 0 0 4px rgba(212, 136, 6, 0.1);
@@ -154,76 +148,72 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  font-weight: 600;
-  border-radius: 12px;
+  font-weight: 700;
+  border-radius: 14px;
   border: none;
   cursor: pointer;
   transition: all 0.2s;
-  padding: 14px 24px;
+  padding: 16px 24px;
+  width: 100%;
 }
 
 .dj-btn-primary {
   background: linear-gradient(135deg, var(--dj-gold), var(--dj-orange));
   color: white;
+  box-shadow: 0 4px 12px rgba(212, 136, 6, 0.3);
 }
 
-.dj-btn-secondary {
-  background-color: var(--dj-black);
-  color: white;
-}
+.dj-btn:active { transform: scale(0.98); }
+.dj-btn:disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
 
-.dj-btn-full {
-  width: calc(100% - 40px);
-  margin: 0 20px;
-}
-
-.dj-btn:active {
-  transform: scale(0.97);
-}
-
-.dj-btn:disabled {
-  background: #d1d5db;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* --- 8. SECTION CARDS & TITLES --- */
-.section-card {
-  margin: 0 20px 24px 20px;
-  padding: 20px;
-  border-radius: 20px;
-  background: var(--dj-white);
-  border: 1px solid var(--dj-gray-border);
-}
-
-.section-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.section-title::before {
-  content: "";
-  width: 4px;
-  height: 18px;
-  background: var(--dj-gold);
-  border-radius: 10px;
-}
-
-/* --- 9. ANIMATIONS --- */
-@keyframes dj-spin {
-  to { transform: rotate(360deg); }
-}
-
+/* --- 8. ANIMATIONS --- */
+@keyframes dj-spin { to { transform: rotate(360deg); } }
 .spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
   border-top-color: #fff;
   border-radius: 50%;
   animation: dj-spin 0.6s linear infinite;
+}
+/* --- 10. BOTTOM NAVIGATION --- */
+.dj-bottom-nav {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 65px;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--dj-gray-border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: none;
+  border: none;
+  color: #9ca3af;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.nav-item.active {
+  color: var(--dj-gold);
+}
+
+.nav-icon {
+  font-size: 1.25rem;
+  margin-bottom: 2px;
+}
+
+.nav-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
 }

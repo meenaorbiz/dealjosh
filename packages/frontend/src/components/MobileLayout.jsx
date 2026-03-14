@@ -1,30 +1,25 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import BrandHeader from './BrandHeader';
+import BottomNav from './BottomNav';
 
-/**
- * MobileLayout creates the DealJosh PWA "frame".
- * It uses the 'mobile-layout' class from index.css to constrain width to 430px
- * and centers it on the desktop screen.
- */
 const MobileLayout = ({ children }) => {
+  const location = useLocation();
+  
+  // Hide bottom nav on auth/onboarding pages
+  const hideNavPaths = ['/login', '/register', '/verify-otp'];
+  const shouldShowNav = !hideNavPaths.includes(location.pathname);
+
   return (
     <div id="root">
-      {/* The main mobile container defined in your CSS */}
       <div className="mobile-layout">
-        
-        {/* Fixed Brand Header at the top */}
         <BrandHeader />
-
-        {/* Main content area. 
-          The padding (top 80px, bottom 40px) is already handled 
-          by the .mobile-layout class in your index.css 
-        */}
-        <main className="w-full">
+        
+        <main className={shouldShowNav ? 'pb-20' : ''}>
           {children}
         </main>
 
-        {/* Optional: Add a subtle bottom safe-area for iPhone/PWA feel */}
-        <div className="h-4 w-full bg-transparent"></div>
+        {shouldShowNav && <BottomNav />}
       </div>
     </div>
   );
