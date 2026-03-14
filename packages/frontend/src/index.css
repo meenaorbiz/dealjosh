@@ -1,4 +1,4 @@
-/* 1. TAILWIND & FONTS (Must be at the very top) */
+/* 1. TAILWIND & FONTS */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -13,7 +13,7 @@
   --dj-white: #ffffff;
   --dj-gray-bg: #f8f9fa;
   --dj-gray-border: #e9ecef;
-  --dj-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --dj-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
 }
 
 /* --- 3. GLOBAL RESET --- */
@@ -26,34 +26,68 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Inter', sans-serif;
-  background-color: #e5e7eb; /* Makes the mobile frame stand out */
+  background-color: #111827; 
   color: var(--dj-black);
+  overflow-x: hidden;
 }
 
 /* --- 4. MOBILE-FIRST SHELL --- */
 #root {
   display: flex;
-  justify-content: center;
+  justify-content: center; 
+  align-items: center;     
   min-height: 100vh;
+  width: 100vw;
 }
 
 .mobile-layout {
   width: 100%;
   max-width: 430px; 
   background-color: var(--dj-white);
-  min-height: 100vh;
+  height: 92vh;     
+  max-height: 932px;
   position: relative;
   box-shadow: var(--dj-shadow);
-  padding-top: 80px; 
+  
+  /* Desktop "Device" styling */
+  border: 8px solid #1f2937;
+  border-radius: 48px;
+  
+  /* Layout behavior */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; 
+}
+
+/* On actual mobile devices, take up the full screen */
+@media (max-width: 640px) {
+  #root {
+    align-items: flex-start;
+  }
+  .mobile-layout {
+    max-width: 100%;
+    height: 100vh;
+    max-height: none;
+    border: none;
+    border-radius: 0;
+  }
+}
+
+main {
+  flex: 1;
+  display: flex;           /* Added to enable centering */
+  flex-direction: column;  /* Stack form elements vertically */
+  justify-content: center; /* This centers the login box vertically in the phone */
+  overflow-y: auto;
+  padding-top: 20px;       /* Reduced from 80 to keep centering balanced */
   padding-bottom: 40px;
 }
 
 /* --- 5. BRAND HEADER --- */
 .dj-brand-header {
-  position: fixed;
+  position: absolute; 
   top: 0;
   width: 100%;
-  max-width: 430px; 
   height: 70px;
   background-color: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
@@ -69,6 +103,7 @@ body {
   align-items: center;
   gap: 12px;
   text-decoration: none;
+  min-width: 200px; /* Ensure enough room for the text */
 }
 
 .dj-brand-name {
@@ -76,6 +111,7 @@ body {
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--dj-black);
+  white-space: nowrap; /* Prevents "JOSH" from wrapping/cutting off */
 }
 
 .dj-gold-text {

@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { api } from '../../api/client'; // Uses your established axios instance
+import { useNavigate } from 'react-router-dom'; // Add this
+import { api } from '../../api/client'; 
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import TextField from '../../components/ui/TextField';
 
 const LoginDiscovery = () => {
   const [mobile, setMobile] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate(); // Initialize navigate
 
   const handleDiscovery = async (e) => {
     e.preventDefault();
@@ -14,18 +17,15 @@ const LoginDiscovery = () => {
     setError('');
 
     try {
-      // 1. Hit the discovery endpoint we verified earlier
       const response = await api.get(`/public/discover?mobile=${mobile}`);
-      const { status, message } = response.data;
+      const { status } = response.data;
 
       if (status === 'NEW_USER') {
-        console.log(message);
-        // Redirect to Step 1 of Onboarding
-        window.location.href = '/register'; 
+        // Use navigate instead of window.location
+        navigate('/register', { state: { mobile } }); 
       } else if (status === 'EXISTING_USER') {
-        console.log(message);
-        // Navigate to OTP screen
-        window.location.href = '/verify-otp';
+        // Pass the mobile number so VerifyOTP knows where to send the code
+        navigate('/verify-otp', { state: { mobile } });
       }
     } catch (err) {
       setError(err.response?.data?.error || 'Something went wrong');
@@ -37,7 +37,7 @@ const LoginDiscovery = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-50">
       <div className="w-full max-w-md p-8 bg-white rounded-xl shadow-lg">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6 font-display">
           Welcome to DealJosh
         </h2>
         <form onSubmit={handleDiscovery} className="space-y-4">
@@ -46,13 +46,13 @@ const LoginDiscovery = () => {
             type="tel"
             placeholder="Enter 10-digit mobile"
             value={mobile}
-            onChange={(e) => setMobile(e.target.value)}
+            onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
             required
           />
           {error && <p className="text-sm text-red-600">{error}</p>}
           <Button 
             type="submit" 
-            className="w-full" 
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
             disabled={loading || mobile.length < 10}
           >
             {loading ? 'Checking...' : 'Get Started'}

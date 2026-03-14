@@ -1,49 +1,66 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import { Button } from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
 
 const VerifyOTP = () => {
-  const [otp, setOtp] = useState('');
-  const [mobile, setMobile] = useState('');
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [timer, setTimer] = useState(30);
+  
+  const location = useLocation();
+  const navigate = useNavigate();
+  const inputRefs = useRef([]);
 
+  const mobile = location.state?.mobile;
+
+  // Security: If someone tries to access this page without a mobile number, send them back
   useEffect(() => {
-    // Retrieve the mobile number stored during the Discovery phase
-    const savedMobile = localStorage.getItem('temp_dj_mobile');
-    if (!savedMobile) {
-      window.location.href = '/login';
-    } else {
-      setMobile(savedMobile);
+    if (!mobile) {
+      navigate('/login');
     }
+  }, [mobile, navigate]);
 
-    // Simple resend timer logic
-    const interval = setInterval(() => {
-      setTimer((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const handleChange = (value, index) => {
+    if (isNaN(value)) return;
+
+    const newOtp = [...otp];
+    newOtp[index] = value.slice(-1); // Only take the last character
+    setOtp(newOtp);
+
+    // Move to next field if value is entered
+    if (value && index < 5) {
+      inputRefs.current[index + 1].focus();
+    }
+  };
+
+  const handleKeyDown = (e, index) => {
+    // Move to previous field on backspace if current field is empty
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs.current[index - 1].focus();
+    }
+  };
 
   const handleVerify = async (e) => {
     e.preventDefault();
+    const otpString = otp.join('');
+    if (otpString.length < 6) return;
+
     setLoading(true);
     setError('');
 
     try {
-      const response = await api.post('/public/verify-otp', {
-        mobile: mobile,
-        otp: otp
+      // 1. Call backend to verify OTP
+      const response = await api.post('/auth/verify-otp', {
+        mobile,
+        otp: otpString
       });
 
-      // On success, store the token for the interceptor
-      const { token } = response.data;
-      localStorage.setItem('dj_token', token);
-      localStorage.removeItem('temp_dj_mobile');
+      // 2. Save the JWT token to LocalStorage
+      localStorage.setItem('token', response.data.token);
 
-      // Redirect to the merchant dashboard or home
-      window.location.href = '/dashboard';
+      // 3. Navigate to the dashboard or onboarding
+      navigate('/dashboard'); 
     } catch (err) {
       setError(err.response?.data?.error || 'Invalid OTP. Please try again.');
     } finally {
@@ -51,57 +68,50 @@ const VerifyOTP = () => {
     }
   };
 
-  const handleResend = async () => {
-    setTimer(30);
-    try {
-      await api.get(`/public/discover?mobile=${mobile}`);
-    } catch (err) {
-      setError('Failed to resend OTP');
-    }
-  };
-
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-50">
       <div className="w-full max-w-md p-8 bg-white rounded-xl shadow-lg">
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">
-          Verify Mobile
+          Verify OTP
         </h2>
-        <p className="text-center text-gray-600 mb-6 text-sm">
-          Enter the 6-digit code sent to +91 {mobile}
+        <p className="text-center text-gray-600 mb-8">
+          Sent to +91 {mobile}
         </p>
-        
+
         <form onSubmit={handleVerify} className="space-y-6">
-          <Input
-            label="One-Time Password"
-            type="text"
-            placeholder="000000"
-            value={otp}
-            onChange={(val) => setOtp(val)}
-            required
-          />
+          <div className="flex justify-between gap-2">
+            {otp.map((digit, index) => (
+              <input
+                key={index}
+                type="text"
+                maxLength="1"
+                ref={(el) => (inputRefs.current[index] = el)}
+                value={digit}
+                onChange={(e) => handleChange(e.target.value, index)}
+                onKeyDown={(e) => handleKeyDown(e, index)}
+                className="w-12 h-12 text-center text-xl font-bold border-2 rounded-lg focus:border-blue-500 focus:outline-none bg-gray-50"
+              />
+            ))}
+          </div>
 
           {error && <p className="text-sm text-red-600 text-center">{error}</p>}
 
           <Button 
-            label="Verify & Login"
             type="submit" 
-            fullWidth={true}
-            loading={loading}
-            disabled={otp.length !== 6}
-          />
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+            disabled={loading || otp.join('').length < 6}
+          >
+            {loading ? 'Verifying...' : 'Verify & Login'}
+          </Button>
 
           <div className="text-center">
-            {timer > 0 ? (
-              <p className="text-sm text-gray-500">Resend code in {timer}s</p>
-            ) : (
-              <button 
-                type="button"
-                onClick={handleResend}
-                className="text-sm text-blue-600 font-medium hover:underline"
-              >
-                Resend OTP
-              </button>
-            )}
+            <button 
+              type="button"
+              onClick={() => navigate('/login')}
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Change Mobile Number
+            </button>
           </div>
         </form>
       </div>
