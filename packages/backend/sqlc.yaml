@@ -1,0 +1,10 @@
+version: "2"
+sql:
+  - schema: "internal/db/schema" # Path to your .sql schema files
+    queries: "internal/db/queries" # Path to your .sql query files
+    engine: "postgresql"
+    gen:
+      go:
+        package: "generated"
+        out: "internal/db/generated"
+        sql_package: "pgx/v5" # <--- THIS IS THE CRITICAL LINE
