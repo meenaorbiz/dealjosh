@@ -11,12 +11,10 @@ const RegisterStore = () => {
   const navigate = useNavigate();
   const { registerStore, loading, error } = useRegistration();
   
-  // Master Data States
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
   const [coords, setCoords] = useState(null);
   
-  // Form State mapped to PostgreSQL Schema
   const [formData, setFormData] = useState({
     name: '',
     state_id: '',
@@ -27,12 +25,9 @@ const RegisterStore = () => {
     address: ''
   });
 
-  // 1. Initial Load: States & GPS
   useEffect(() => {
-    // Fetch states from public master data
     api.get('/public/states').then(res => setStates(res.data));
 
-    // Point 4: Location resolve using lat-long
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
@@ -41,7 +36,6 @@ const RegisterStore = () => {
     }
   }, []);
 
-  // 2. Cascading City Load
   useEffect(() => {
     if (formData.state_id) {
       api.get(`/public/cities?state_id=${formData.state_id}`).then(res => setCities(res.data));
@@ -53,17 +47,13 @@ const RegisterStore = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Point 5: Save merchant details in DB via the hook
       await registerStore(formData, coords);
       navigate('/dashboard');
-    } catch (err) {
-      // Error handled by hook state
-    }
+    } catch (err) {}
   };
 
   return (
     <div className="flex flex-col h-full w-full py-6 px-6 overflow-y-auto animate-in fade-in duration-700">
-      {/* Point 11: Premium Badge at Top Right */}
       <BrandHeader subtitle="Store Setup" plan="PREMIUM" />
       
       <div className="my-6">
@@ -79,7 +69,6 @@ const RegisterStore = () => {
           required
         />
 
-        {/* State & City Grid */}
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">State</label>
@@ -108,8 +97,8 @@ const RegisterStore = () => {
           </div>
         </div>
 
-        {/* GPS Logic Card */}
-        <div className="p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200 flex items-center gap-4">
+        {/* --- GPS Logic Card with min-h-[80px] to prevent layout jump --- */}
+        <div className="min-h-[80px] p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200 flex items-center gap-4">
           <div className={`h-10 w-10 rounded-full flex items-center justify-center ${coords ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600 animate-pulse'}`}>
              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />

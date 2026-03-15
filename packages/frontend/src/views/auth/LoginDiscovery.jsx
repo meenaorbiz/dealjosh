@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import { Button } from '../../components/ui/Button';
 import TextField from '../../components/ui/TextField';
-import BrandHeader from '../../components/ui/BrandHeader';
-import MoolMantra from '../../components/ui/MoolMantra';
+import BrandHeader from '../../components/ui/BrandHeader'; // <--- Check this path
+import MoolMantra from '../../components/ui/MoolMantra';   // <--- Check this path
 
 const LoginDiscovery = () => {
   const [mobile, setMobile] = useState('');

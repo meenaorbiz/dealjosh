@@ -1,10 +1,11 @@
 import React from 'react';
+import BrandLogo from './BrandLogo';
+import PlanBadge from './PlanBadge';
 
-const BrandHeader = () => (
-  <header className="dj-brand-header">
-    <div className="dj-logo-link flex items-center no-underline w-full h-full">
-      {/* 1. The New Rupee Shopping Bag Logo - Resized and Locked to Left */}
-      <div className="flex-shrink-0 flex items-center justify-center p-1">
+const BrandHeader = ({ subtitle, plan }) => (
+  <header className="dj-brand-header flex justify-between items-center pr-4">
+    <div className="dj-logo-link flex items-center no-underline">
+      <div className="flex-shrink-0 p-1">
         <img 
           src="/logo.svg" 
           alt="DealJosh Logo" 
@@ -12,16 +13,20 @@ const BrandHeader = () => (
         />
       </div>
 
-      {/* 2. The Brand Name Text - Fixed Spacing and J-Factor */}
       <div className="ml-2 flex flex-col justify-center leading-tight">
-        <span className="text-[1.4rem] font-[900] tracking-tighter text-[#1a1a1a] flex items-center whitespace-nowrap">
-          DEAL<span className="text-[#D48806] ml-[2px]">JOSH</span>
-        </span>
+        <BrandLogo size="text-[1.4rem]" />
         <span className="text-[0.65rem] font-bold text-gray-500 tracking-[0.25em] uppercase">
-          Merchant Portal
+          {subtitle || 'Merchant Portal'}
         </span>
       </div>
     </div>
+
+    {/* Fixed: Changed prop from 'plan' to 'planName' to match PlanBadge */}
+    {plan && (
+      <div className="animate-in fade-in slide-in-from-right-2 duration-500">
+        <PlanBadge planName={plan} />
+      </div>
+    )}
   </header>
 );
 
