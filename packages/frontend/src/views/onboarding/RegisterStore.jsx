@@ -1,132 +1,170 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useRegistration } from '../../hooks/useRegistration';
+import { api } from '../../api/client';
 import { Button } from '../../components/ui/Button';
 import TextField from '../../components/ui/TextField';
+import BrandHeader from '../../components/ui/BrandHeader';
+import MoolMantra from '../../components/ui/MoolMantra';
 
 const RegisterStore = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { registerStore, loading, error: apiError } = useRegistration();
+  const { registerStore, loading, error } = useRegistration();
   
-  // Get the mobile number passed from LoginDiscovery
-  const initialMobile = location.state?.mobile || '';
-
+  // Master Data States
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [coords, setCoords] = useState(null);
+  
+  // Form State mapped to PostgreSQL Schema
   const [formData, setFormData] = useState({
-    storeName: '',
-    ownerName: '',
-    mobile: initialMobile,
-    category: '',
+    name: '',
+    state_id: '',
+    city_id: '',
+    pincode: '',
+    area: '',
+    landmark: '',
     address: ''
   });
 
-  const [errors, setErrors] = useState({});
+  // 1. Initial Load: States & GPS
+  useEffect(() => {
+    // Fetch states from public master data
+    api.get('/public/states').then(res => setStates(res.data));
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
-  };
+    // Point 4: Location resolve using lat-long
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        (err) => console.error("GPS access denied", err)
+      );
+    }
+  }, []);
 
-  const validate = () => {
-    const newErrors = {};
-    if (!formData.storeName) newErrors.storeName = 'Store name is required';
-    if (!formData.ownerName) newErrors.ownerName = 'Owner name is required';
-    if (!formData.category) newErrors.category = 'Please select a category';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  // 2. Cascading City Load
+  useEffect(() => {
+    if (formData.state_id) {
+      api.get(`/public/cities?state_id=${formData.state_id}`).then(res => setCities(res.data));
+    } else {
+      setCities([]);
+    }
+  }, [formData.state_id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
-
     try {
-      await registerStore(formData);
-      // On success, move to OTP verification or Dashboard
-      navigate('/verify-otp', { state: { mobile: formData.mobile } });
+      // Point 5: Save merchant details in DB via the hook
+      await registerStore(formData, coords);
+      navigate('/dashboard');
     } catch (err) {
-      console.error("Registration failed:", err);
+      // Error handled by hook state
     }
   };
 
   return (
-    <div className="flex flex-col min-h-full py-4">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Register Store</h2>
-        <p className="text-gray-500">Tell us about your business</p>
+    <div className="flex flex-col h-full w-full py-6 px-6 overflow-y-auto animate-in fade-in duration-700">
+      {/* Point 11: Premium Badge at Top Right */}
+      <BrandHeader subtitle="Store Setup" plan="PREMIUM" />
+      
+      <div className="my-6">
+        <MoolMantra />
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-2">
-        <TextField
-          label="Store Name"
-          name="storeName"
-          placeholder="e.g. Josh General Store"
-          value={formData.storeName}
-          onChange={handleChange}
-          error={errors.storeName}
+      <form onSubmit={handleSubmit} className="space-y-5 pb-10">
+        <TextField 
+          label="BUSINESS NAME" 
+          placeholder="e.g. Josh Electronics" 
+          value={formData.name}
+          onChange={e => setFormData({...formData, name: e.target.value})}
+          required
         />
 
-        <TextField
-          label="Owner Name"
-          name="ownerName"
-          placeholder="Enter full name"
-          value={formData.ownerName}
-          onChange={handleChange}
-          error={errors.ownerName}
-        />
-
-        <TextField
-          label="Mobile Number"
-          name="mobile"
-          value={formData.mobile}
-          disabled={true} // Locked since it was verified/entered earlier
-          className="bg-gray-100 cursor-not-allowed"
-        />
-
-        <div className="flex flex-col w-full mb-4">
-          <label className="mb-1 text-sm font-medium text-gray-700">Category</label>
-          <select
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            className={`px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-white ${
-              errors.category ? 'border-red-500' : 'border-gray-300'
-            }`}
-          >
-            <option value="">Select Category</option>
-            <option value="grocery">Grocery</option>
-            <option value="restaurant">Restaurant</option>
-            <option value="electronics">Electronics</option>
-            <option value="other">Other</option>
-          </select>
-          {errors.category && <span className="text-xs text-red-500 mt-1">{errors.category}</span>}
-        </div>
-
-        <TextField
-          label="Business Address"
-          name="address"
-          placeholder="Enter full address"
-          value={formData.address}
-          onChange={handleChange}
-        />
-
-        {apiError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-            {apiError}
+        {/* State & City Grid */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">State</label>
+            <select 
+              className="dj-input text-sm h-11 bg-white border-gray-200"
+              value={formData.state_id}
+              onChange={e => setFormData({...formData, state_id: e.target.value, city_id: ''})}
+              required
+            >
+              <option value="">Select</option>
+              {states.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
           </div>
-        )}
-
-        <div className="pt-4">
-          <Button 
-            type="submit" 
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 shadow-md"
-            disabled={loading}
-          >
-            {loading ? 'Registering...' : 'Register Store'}
-          </Button>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">City</label>
+            <select 
+              className="dj-input text-sm h-11 bg-white border-gray-200"
+              disabled={!cities.length}
+              value={formData.city_id}
+              onChange={e => setFormData({...formData, city_id: e.target.value})}
+              required
+            >
+              <option value="">Select</option>
+              {cities.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
         </div>
+
+        {/* GPS Logic Card */}
+        <div className="p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200 flex items-center gap-4">
+          <div className={`h-10 w-10 rounded-full flex items-center justify-center ${coords ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600 animate-pulse'}`}>
+             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+             </svg>
+          </div>
+          <div className="flex-1">
+            <p className="text-[10px] font-black text-gray-500 uppercase">GPS resolve</p>
+            <p className="text-[11px] text-gray-400 italic">
+              {coords ? `Coordinates Locked: ${coords.lat.toFixed(3)}, ${coords.lng.toFixed(3)}` : "Acquiring shop location..."}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <TextField 
+            label="PINCODE" 
+            type="number" 
+            value={formData.pincode}
+            onChange={e => setFormData({...formData, pincode: e.target.value.slice(0,6)})}
+            required
+          />
+          <TextField 
+            label="AREA/LOCALITY" 
+            value={formData.area}
+            onChange={e => setFormData({...formData, area: e.target.value})}
+            required
+          />
+        </div>
+
+        <TextField 
+          label="LANDMARK (OPTIONAL)" 
+          value={formData.landmark}
+          onChange={e => setFormData({...formData, landmark: e.target.value})}
+        />
+
+        <TextField 
+          label="DETAILED ADDRESS" 
+          placeholder="Shop No, Building Name, Street"
+          value={formData.address}
+          onChange={e => setFormData({...formData, address: e.target.value})}
+          required
+        />
+
+        {error && <p className="text-red-500 text-[10px] font-bold text-center uppercase tracking-tighter">{error}</p>}
+
+        <Button 
+          type="submit" 
+          variant="primary"
+          loading={loading} 
+          disabled={!coords || !formData.city_id}
+          className="w-full mt-4"
+        >
+          Launch My Store
+        </Button>
       </form>
     </div>
   );
