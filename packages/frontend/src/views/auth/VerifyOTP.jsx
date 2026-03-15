@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../../api/client';
 import { Button } from '../../components/ui/Button';
 import TextField from '../../components/ui/TextField';
-import BrandHeader from '../../components/ui/BrandHeader';
+import BrandHeader from "../../components/ui/BrandHeader";
 import BrandLogo from '../../components/ui/BrandLogo';
 
 const VerifyOTP = () => {

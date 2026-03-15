@@ -1,6 +1,6 @@
 import React from 'react';
-import BrandLogo from './BrandLogo';
-import PlanBadge from './PlanBadge';
+import BrandLogo from './BrandLogo';  // Just './' because they are neighbors
+import PlanBadge from './PlanBadge';  // Just './' because they are neighbors
 
 const BrandHeader = ({ subtitle, plan }) => (
   <header className="dj-brand-header flex justify-between items-center pr-4">
