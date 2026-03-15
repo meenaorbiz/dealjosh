@@ -55,17 +55,19 @@ body {
   overflow: hidden; 
 }
 
-/* Vertical Centering Fix: Use Flexbox on 'main' */
+/* Vertical Centering: Centers the login form inside the device frame */
 main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* This centers the login form vertically */
+  justify-content: center; 
   overflow-y: auto;
   padding: 24px;
+  /* Push content down if header is absolute */
+  padding-top: 100px; 
 }
 
-/* On actual mobile devices */
+/* Mobile responsive override */
 @media (max-width: 640px) {
   #root { align-items: flex-start; }
   .mobile-layout {
@@ -77,40 +79,48 @@ main {
   }
 }
 
-/* --- 5. BRAND HEADER (J Fix) --- */
+/* --- 5. BRAND HEADER (Optimized for Bag Logo) --- */
 .dj-brand-header {
   position: absolute; 
   top: 0;
   width: 100%;
-  height: 70px;
-  background-color: rgba(255, 255, 255, 0.9);
+  height: 80px; /* Increased to fit the bag handle and hanging tag */
+  background-color: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--dj-gray-border);
   display: flex;
   align-items: center;
-  padding: 0 20px;
+  padding: 0 16px;
   z-index: 1000;
 }
 
 .dj-logo-link {
   display: flex;
   align-items: center;
-  gap: 12px;
   text-decoration: none;
-  overflow: visible; /* Ensure nothing inside is clipped */
+  overflow: visible; 
 }
 
 .dj-brand-name {
-  font-size: 1.25rem;
-  font-weight: 800;
-  letter-spacing: -0.01em; /* Reduced slightly to help width */
+  font-size: 1.4rem;
+  font-weight: 900; /* Extra bold for impact */
+  letter-spacing: -0.04em;
   color: var(--dj-black);
-  white-space: nowrap;     /* Force text to stay on one line */
+  white-space: nowrap;
   display: inline-block;
-  min-width: fit-content;  /* Allow container to expand to full text */
 }
 
-.dj-gold-text { color: var(--dj-gold); }
+.dj-gold-text {
+  /* This creates the vibrant energy in the word JOSH */
+  background-image: linear-gradient(135deg, var(--dj-gold), var(--dj-orange));
+  background-clip: text;
+  color: transparent; /* Fallback for older browsers */
+  -webkit-background-clip: text; /* Keep this for Safari compatibility */
+  -webkit-text-fill-color: transparent;
+  
+  display: inline-block;
+  margin-left: 2px;
+}
 
 /* --- 6. ATOMIC UI ELEMENTS --- */
 .dj-form-group {
@@ -176,6 +186,7 @@ main {
   border-radius: 50%;
   animation: dj-spin 0.6s linear infinite;
 }
+
 /* --- 10. BOTTOM NAVIGATION --- */
 .dj-bottom-nav {
   position: absolute;

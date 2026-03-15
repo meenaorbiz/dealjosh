@@ -1,0 +1,17 @@
+{
+  "short_name": "DealJosh",
+  "name": "DealJosh Merchant Portal",
+  "icons": [
+    {
+      "src": "logo.svg",
+      "sizes": "48x48 72x72 96x96 128x128 192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#D48806",
+  "background_color": "#ffffff",
+  "orientation": "portrait"
+}

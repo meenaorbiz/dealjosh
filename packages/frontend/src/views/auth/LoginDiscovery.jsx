@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Add this
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client'; 
-import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
-import TextField from '../../components/ui/TextField';
+import { Button } from '../../components/ui/Button'; // Using your UI component
+import { Input } from '../../components/ui/Input';   // Using your UI component
+import BrandMessage from '../../components/BrandMessage';
 
 const LoginDiscovery = () => {
   const [mobile, setMobile] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
 
   const handleDiscovery = async (e) => {
     e.preventDefault();
@@ -21,10 +21,8 @@ const LoginDiscovery = () => {
       const { status } = response.data;
 
       if (status === 'NEW_USER') {
-        // Use navigate instead of window.location
         navigate('/register', { state: { mobile } }); 
       } else if (status === 'EXISTING_USER') {
-        // Pass the mobile number so VerifyOTP knows where to send the code
         navigate('/verify-otp', { state: { mobile } });
       }
     } catch (err) {
@@ -35,12 +33,12 @@ const LoginDiscovery = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-50">
-      <div className="w-full max-w-md p-8 bg-white rounded-xl shadow-lg">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6 font-display">
-          Welcome to DealJosh
-        </h2>
-        <form onSubmit={handleDiscovery} className="space-y-4">
+    <div className="flex flex-col w-full animate-in fade-in duration-700">
+      {/* Centralized Brand Logic */}
+      <BrandMessage />
+
+      <div className="px-6">
+        <form onSubmit={handleDiscovery} className="space-y-6">
           <Input
             label="Mobile Number"
             type="tel"
@@ -48,16 +46,23 @@ const LoginDiscovery = () => {
             value={mobile}
             onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
             required
+            error={error} 
           />
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          
+          {/* Button uses the variant logic from your ui/Button.jsx */}
           <Button 
             type="submit" 
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
-            disabled={loading || mobile.length < 10}
+            variant="primary" 
+            loading={loading}
+            disabled={mobile.length < 10}
           >
-            {loading ? 'Checking...' : 'Get Started'}
+            Get Started
           </Button>
         </form>
+        
+        <p className="text-center text-[10px] text-gray-400 mt-12 uppercase tracking-widest">
+          Secure Login • DealJosh Merchant
+        </p>
       </div>
     </div>
   );
