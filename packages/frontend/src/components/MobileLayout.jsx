@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import BrandHeader from './BrandHeader';
+import BrandHeader from './ui/BrandHeader';
 import BottomNav from './BottomNav';
 
 const MobileLayout = ({ children }) => {
